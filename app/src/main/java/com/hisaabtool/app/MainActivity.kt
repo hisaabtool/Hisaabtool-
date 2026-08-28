@@ -3,6 +3,7 @@ package com.hisaabtool.app
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.ValueCallback
@@ -13,20 +14,16 @@ import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
+    private lateinit var swipeRefresh: SwipeRefreshLayout
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
-    // गैलरी से फोटो चुनने के लिए लांचर
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data?.data
-            if (data != null) {
-                uploadMessage?.onReceiveValue(arrayOf(data))
-            } else {
-                uploadMessage?.onReceiveValue(null)
-            }
+            uploadMessage?.onReceiveValue(result.data?.data?.let { arrayOf(it) })
         } else {
             uploadMessage?.onReceiveValue(null)
         }
@@ -39,8 +36,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         webView = findViewById(R.id.webView)
-        
-        // 1. नेटिव ऐप फील के लिए डिज़ाइन सेटिंग्स
+        swipeRefresh = findViewById(R.id.swipeRefresh)
+
+        // Pull to refresh चालू करने के लिए
+        swipeRefresh.setOnRefreshListener {
+            webView.reload()
+        }
+
         webView.scrollBarStyle = WebView.SCROLLBARS_OUTSIDE_OVERLAY
         webView.isScrollbarFadingEnabled = true
 
@@ -50,11 +52,16 @@ class MainActivity : AppCompatActivity() {
         webSettings.allowFileAccess = true
         webSettings.allowContentAccess = true
         webSettings.builtInZoomControls = true
-        webSettings.displayZoomControls = false // ब्राउज़र वाले ज़ूम बटन छिपाने के लिए
+        webSettings.displayZoomControls = false
 
-        webView.webViewClient = WebViewClient() 
-        
-        // 2. फोटो रिसाइज़र और अपलोड को काम करने के लिए WebChromeClient
+        webView.webViewClient = object : WebViewClient() {
+            // जब पेज पूरी तरह लोड हो जाए तो रीफ्रेश एनीमेशन (चकरी) को रोक दें
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                swipeRefresh.isRefreshing = false
+            }
+        }
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 webView: WebView?,
@@ -63,11 +70,10 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
-
-                val intent = Intent(Intent.ACTION_GET_CONTENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.type = "image/*" // केवल फोटो चुनने का ऑप्शन देने के लिए
-
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "image/*"
+                }
                 fileChooserLauncher.launch(intent)
                 return true
             }
