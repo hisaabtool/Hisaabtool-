@@ -32,6 +32,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -44,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnHome: Button
     private lateinit var btnYouTube: Button
     private lateinit var btnRate: Button
+    private lateinit var adView: AdView
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -64,6 +68,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // AdMob Initialize
+        try {
+            MobileAds.initialize(this) {}
+        } catch (e: Exception) {}
+
         webView = findViewById(R.id.webView)
         swipeRefresh = findViewById(R.id.swipeRefresh)
         progressBar = findViewById(R.id.progressBar)
@@ -74,13 +83,26 @@ class MainActivity : AppCompatActivity() {
         btnHome = findViewById(R.id.btnHome)
         btnYouTube = findViewById(R.id.btnYouTube)
         btnRate = findViewById(R.id.btnRate)
+        adView = findViewById(R.id.adView)
+
+        // Load Ad
+        try {
+            val adRequest = AdRequest.Builder().build()
+            adView.loadAd(adRequest)
+        } catch (e: Exception) {}
 
         Handler(Looper.getMainLooper()).postDelayed({
             try { splashScreen.visibility = View.GONE } catch (e: Exception) {}
         }, 2000)
 
         setupWebView()
-        loadWebsite()
+        
+        val intentData: Uri? = intent.data
+        if (intentData != null) {
+            webView.loadUrl(intentData.toString())
+        } else {
+            loadWebsite()
+        }
 
         swipeRefresh.setOnRefreshListener { webView.reload() }
         btnRetry.setOnClickListener { loadWebsite() }
@@ -95,10 +117,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnHome.setOnClickListener { webView.loadUrl("https://hisaabtool.blogspot.com/") }
-        
-        // आपका असली YouTube चैनल लिंक
         btnYouTube.setOnClickListener { webView.loadUrl("https://youtube.com/@rahul-t9j8b") }
-        
         btnRate.setOnClickListener { showRatingDialog() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -152,6 +171,19 @@ class MainActivity : AppCompatActivity() {
                     webView.visibility = View.GONE
                     noInternetLayout.visibility = View.VISIBLE
                 }
+            }
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val url = request?.url.toString()
+                if (url.startsWith("intent://") || url.startsWith("whatsapp://") || url.startsWith("tel:") || url.startsWith("mailto:")) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        return true
+                    }
+                }
+                return false
             }
         }
 
