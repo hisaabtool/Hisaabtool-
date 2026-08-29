@@ -47,9 +47,13 @@ class MainActivity : AppCompatActivity() {
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            uploadMessage?.onReceiveValue(result.data?.data?.let { arrayOf(it) })
-        } else {
+        try {
+            if (result.resultCode == Activity.RESULT_OK) {
+                uploadMessage?.onReceiveValue(result.data?.data?.let { arrayOf(it) })
+            } else {
+                uploadMessage?.onReceiveValue(null)
+            }
+        } catch (e: Exception) {
             uploadMessage?.onReceiveValue(null)
         }
         uploadMessage = null
@@ -72,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         btnRate = findViewById(R.id.btnRate)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            splashScreen.visibility = View.GONE
+            try { splashScreen.visibility = View.GONE } catch (e: Exception) {}
         }, 2000)
 
         setupWebView()
@@ -82,10 +86,12 @@ class MainActivity : AppCompatActivity() {
         btnRetry.setOnClickListener { loadWebsite() }
         
         btnShare.setOnClickListener {
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.type = "text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "HisaabTool के कैलकुलेटर्स का उपयोग करें: ${webView.url}")
-            startActivity(Intent.createChooser(shareIntent, "Share via"))
+            try {
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "text/plain"
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "HisaabTool के कैलकुलेटर्स का उपयोग करें: ${webView.url}")
+                startActivity(Intent.createChooser(shareIntent, "Share via"))
+            } catch (e: Exception) {}
         }
 
         btnHome.setOnClickListener { webView.loadUrl("https://hisaabtool.blogspot.com/") }
@@ -94,29 +100,33 @@ class MainActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack()
-                } else {
-                    AlertDialog.Builder(this@MainActivity)
-                        .setTitle("HisaabTool")
-                        .setMessage("क्या आप ऐप बंद करना चाहते हैं?")
-                        .setPositiveButton("हाँ") { _, _ -> finish() }
-                        .setNegativeButton("नहीं", null)
-                        .show()
-                }
+                try {
+                    if (webView.canGoBack()) {
+                        webView.goBack()
+                    } else {
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("HisaabTool")
+                            .setMessage("क्या आप ऐप बंद करना चाहते हैं?")
+                            .setPositiveButton("हाँ") { _, _ -> finish() }
+                            .setNegativeButton("नहीं", null)
+                            .show()
+                    }
+                } catch (e: Exception) { finish() }
             }
         })
     }
 
     private fun showRatingDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("HisaabTool को रेट करें")
-            .setMessage("क्या आपको हमारा ऐप और GyaanShots के वीडियो पसंद आ रहे हैं? कृपया हमें 5-स्टार रेटिंग दें!")
-            .setPositiveButton("अभी रेट करें") { _, _ ->
-                Toast.makeText(this, "धन्यवाद! ऐप के प्ले स्टोर पर आने के बाद यह रेटिंग पेज खोलेगा।", Toast.LENGTH_LONG).show()
-            }
-            .setNegativeButton("बाद में", null)
-            .show()
+        try {
+            AlertDialog.Builder(this)
+                .setTitle("HisaabTool को रेट करें")
+                .setMessage("क्या आपको हमारा ऐप और GyaanShots के वीडियो पसंद आ रहे हैं? कृपया हमें 5-स्टार रेटिंग दें!")
+                .setPositiveButton("अभी रेट करें") { _, _ ->
+                    Toast.makeText(this, "धन्यवाद! ऐप के प्ले स्टोर पर आने के बाद यह रेटिंग पेज खोलेगा।", Toast.LENGTH_LONG).show()
+                }
+                .setNegativeButton("बाद में", null)
+                .show()
+        } catch (e: Exception) {}
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -144,37 +154,45 @@ class MainActivity : AppCompatActivity() {
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                if (newProgress == 100) progressBar.visibility = View.GONE
-                else {
-                    progressBar.visibility = View.VISIBLE
-                    progressBar.progress = newProgress
-                }
+                try {
+                    if (newProgress == 100) progressBar.visibility = View.GONE
+                    else {
+                        progressBar.visibility = View.VISIBLE
+                        progressBar.progress = newProgress
+                    }
+                } catch (e: Exception) {}
             }
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
-                uploadMessage?.onReceiveValue(null)
-                uploadMessage = filePathCallback
-                fileChooserLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "image/*"
-                })
+                try {
+                    uploadMessage?.onReceiveValue(null)
+                    uploadMessage = filePathCallback
+                    fileChooserLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*"
+                    })
+                } catch (e: Exception) {}
                 return true
             }
         }
 
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
-            val request = DownloadManager.Request(Uri.parse(url))
-            request.setMimeType(mimeType)
-            val cookies = CookieManager.getInstance().getCookie(url)
-            request.addRequestHeader("cookie", cookies)
-            request.addRequestHeader("User-Agent", userAgent)
-            request.setDescription("Downloading file...")
-            request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimeType))
-            
-            val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            dm.enqueue(request)
-            Toast.makeText(applicationContext, "Downloading File...", Toast.LENGTH_LONG).show()
+            try {
+                val request = DownloadManager.Request(Uri.parse(url))
+                request.setMimeType(mimeType)
+                val cookies = CookieManager.getInstance().getCookie(url)
+                request.addRequestHeader("cookie", cookies)
+                request.addRequestHeader("User-Agent", userAgent)
+                request.setDescription("Downloading file...")
+                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimeType))
+                
+                val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.enqueue(request)
+                Toast.makeText(applicationContext, "Downloading File...", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -192,9 +210,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return activeNetwork.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        return try {
+            val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = connectivityManager.activeNetwork ?: return false
+            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+            activeNetwork.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } catch (e: Exception) {
+            true 
+        }
     }
 }
