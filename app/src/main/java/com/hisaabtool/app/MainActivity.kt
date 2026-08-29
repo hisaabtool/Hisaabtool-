@@ -32,6 +32,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var noInternetLayout: LinearLayout
     private lateinit var btnRetry: Button
     private lateinit var btnShare: ImageButton
+    private lateinit var bottomNavigation: BottomNavigationView
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -64,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         noInternetLayout = findViewById(R.id.noInternetLayout)
         btnRetry = findViewById(R.id.btnRetry)
         btnShare = findViewById(R.id.btnShare)
+        bottomNavigation = findViewById(R.id.bottomNavigation)
 
         Handler(Looper.getMainLooper()).postDelayed({
             splashScreen.visibility = View.GONE
@@ -72,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         setupWebView()
         loadWebsite()
 
-        swipeRefresh.setOnRefreshListener { loadWebsite() }
+        swipeRefresh.setOnRefreshListener { webView.reload() }
         btnRetry.setOnClickListener { loadWebsite() }
         
         btnShare.setOnClickListener {
@@ -80,6 +83,24 @@ class MainActivity : AppCompatActivity() {
             shareIntent.type = "text/plain"
             shareIntent.putExtra(Intent.EXTRA_TEXT, "HisaabTool के कैलकुलेटर्स का उपयोग करें: ${webView.url}")
             startActivity(Intent.createChooser(shareIntent, "Share via"))
+        }
+
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    webView.loadUrl("https://hisaabtool.blogspot.com/")
+                    true
+                }
+                R.id.nav_gyaanshots -> {
+                    webView.loadUrl("https://m.youtube.com/results?search_query=GyaanShots")
+                    true
+                }
+                R.id.nav_rate -> {
+                    showRatingDialog()
+                    false 
+                }
+                else -> false
+            }
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -96,6 +117,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun showRatingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("HisaabTool को रेट करें")
+            .setMessage("क्या आपको हमारा ऐप और GyaanShots के वीडियो पसंद आ रहे हैं? कृपया हमें 5-स्टार रेटिंग दें!")
+            .setPositiveButton("अभी रेट करें") { _, _ ->
+                Toast.makeText(this, "धन्यवाद! ऐप के प्ले स्टोर पर आने के बाद यह रेटिंग पेज खोलेगा।", Toast.LENGTH_LONG).show()
+            }
+            .setNegativeButton("बाद में", null)
+            .show()
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -140,7 +172,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // फाइल डाउनलोड करने का सिस्टम (नया कोड)
         webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
             val request = DownloadManager.Request(Uri.parse(url))
             request.setMimeType(mimeType)
