@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.HisaabTool" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Theme.HisaabTool" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowNoTitle">true</item>
-        <!-- स्टेटस बार का रंग आपकी वेबसाइट के हेडर जैसा करने के लिए -->
         <item name="android:statusBarColor">#1A202C</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
