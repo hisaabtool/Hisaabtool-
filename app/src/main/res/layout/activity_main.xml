@@ -76,12 +76,12 @@
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
         <Button
-            android:id="@+id/btnGyaan"
+            android:id="@+id/btnYouTube"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#1A202C"
-            android:text="▶ GyaanShots"
+            android:text="▶ YouTube"
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
         <Button
