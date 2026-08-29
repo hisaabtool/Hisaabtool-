@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <!-- इंटरनेट इस्तेमाल करने की परमिशन -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- नेटवर्क/इंटरनेट चेक करने की परमिशन (यही मिसिंग था जिसकी वजह से क्रैश हो रहा था) -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -14,12 +11,26 @@
         android:label="HisaabTool"
         android:supportsRtl="true"
         android:theme="@style/Theme.HisaabTool">
+        
+        <!-- AdMob App ID (Test ID) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="hisaabtool.blogspot.com" />
+                <data android:scheme="http" android:host="hisaabtool.blogspot.com" />
             </intent-filter>
         </activity>
     </application>
