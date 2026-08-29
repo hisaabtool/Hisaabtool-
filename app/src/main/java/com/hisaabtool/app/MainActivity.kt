@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRetry: Button
     private lateinit var btnShare: ImageButton
     private lateinit var btnHome: Button
-    private lateinit var btnGyaan: Button
+    private lateinit var btnYouTube: Button
     private lateinit var btnRate: Button
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         btnRetry = findViewById(R.id.btnRetry)
         btnShare = findViewById(R.id.btnShare)
         btnHome = findViewById(R.id.btnHome)
-        btnGyaan = findViewById(R.id.btnGyaan)
+        btnYouTube = findViewById(R.id.btnYouTube)
         btnRate = findViewById(R.id.btnRate)
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -95,7 +95,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnHome.setOnClickListener { webView.loadUrl("https://hisaabtool.blogspot.com/") }
-        btnGyaan.setOnClickListener { webView.loadUrl("https://m.youtube.com/results?search_query=GyaanShots") }
+        
+        // आपका असली YouTube चैनल लिंक
+        btnYouTube.setOnClickListener { webView.loadUrl("https://youtube.com/@rahul-t9j8b") }
+        
         btnRate.setOnClickListener { showRatingDialog() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         try {
             AlertDialog.Builder(this)
                 .setTitle("HisaabTool को रेट करें")
-                .setMessage("क्या आपको हमारा ऐप और GyaanShots के वीडियो पसंद आ रहे हैं? कृपया हमें 5-स्टार रेटिंग दें!")
+                .setMessage("क्या आपको हमारा ऐप और हमारे YouTube वीडियो पसंद आ रहे हैं? कृपया हमें 5-स्टार रेटिंग दें!")
                 .setPositiveButton("अभी रेट करें") { _, _ ->
                     Toast.makeText(this, "धन्यवाद! ऐप के प्ले स्टोर पर आने के बाद यह रेटिंग पेज खोलेगा।", Toast.LENGTH_LONG).show()
                 }
