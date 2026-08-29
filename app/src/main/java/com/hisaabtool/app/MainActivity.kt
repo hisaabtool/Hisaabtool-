@@ -2,15 +2,25 @@ package com.hisaabtool.app
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +32,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
+    private lateinit var splashScreen: LinearLayout
+    private lateinit var noInternetLayout: LinearLayout
+    private lateinit var btnRetry: Button
+    private lateinit var btnShare: ImageButton
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -41,60 +55,30 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         swipeRefresh = findViewById(R.id.swipeRefresh)
         progressBar = findViewById(R.id.progressBar)
+        splashScreen = findViewById(R.id.splashScreen)
+        noInternetLayout = findViewById(R.id.noInternetLayout)
+        btnRetry = findViewById(R.id.btnRetry)
+        btnShare = findViewById(R.id.btnShare)
 
-        swipeRefresh.setOnRefreshListener {
-            webView.reload()
+        // Splash Screen को 2 सेकंड बाद हटाना
+        Handler(Looper.getMainLooper()).postDelayed({
+            splashScreen.visibility = View.GONE
+        }, 2000)
+
+        setupWebView()
+        loadWebsite()
+
+        swipeRefresh.setOnRefreshListener { loadWebsite() }
+        btnRetry.setOnClickListener { loadWebsite() }
+        
+        // Share Button का लॉजिक
+        btnShare.setOnClickListener {
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.type = "text/plain"
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "HisaabTool के कैलकुलेटर्स का उपयोग करें: ${webView.url}")
+            startActivity(Intent.createChooser(shareIntent, "Share via"))
         }
 
-        webView.scrollBarStyle = WebView.SCROLLBARS_OUTSIDE_OVERLAY
-        webView.isScrollbarFadingEnabled = true
-
-        val webSettings: WebSettings = webView.settings
-        webSettings.javaScriptEnabled = true
-        webSettings.domStorageEnabled = true
-        webSettings.allowFileAccess = true
-        webSettings.allowContentAccess = true
-        webSettings.builtInZoomControls = true
-        webSettings.displayZoomControls = false
-
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                swipeRefresh.isRefreshing = false
-            }
-        }
-
-        webView.webChromeClient = object : WebChromeClient() {
-            // लोडिंग बार को अपडेट करने के लिए
-            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                super.onProgressChanged(view, newProgress)
-                if (newProgress == 100) {
-                    progressBar.visibility = View.GONE
-                } else {
-                    progressBar.visibility = View.VISIBLE
-                    progressBar.progress = newProgress
-                }
-            }
-
-            override fun onShowFileChooser(
-                webView: WebView?,
-                filePathCallback: ValueCallback<Array<Uri>>?,
-                fileChooserParams: FileChooserParams?
-            ): Boolean {
-                uploadMessage?.onReceiveValue(null)
-                uploadMessage = filePathCallback
-                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "image/*"
-                }
-                fileChooserLauncher.launch(intent)
-                return true
-            }
-        }
-
-        webView.loadUrl("https://hisaabtool.blogspot.com/")
-
-        // बैक बटन दबाने पर अलर्ट डायलॉग
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
@@ -110,4 +94,69 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupWebView() {
+        val webSettings: WebSettings = webView.settings
+        webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true
+        webSettings.allowFileAccess = true
+        webSettings.allowContentAccess = true
+        webSettings.builtInZoomControls = true
+        webSettings.displayZoomControls = false
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                swipeRefresh.isRefreshing = false
+            }
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                if (!isNetworkAvailable()) {
+                    webView.visibility = View.GONE
+                    noInternetLayout.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                if (newProgress == 100) progressBar.visibility = View.GONE
+                else {
+                    progressBar.visibility = View.VISIBLE
+                    progressBar.progress = newProgress
+                }
+            }
+            override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
+                uploadMessage?.onReceiveValue(null)
+                uploadMessage = filePathCallback
+                fileChooserLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "image/*"
+                })
+                return true
+            }
+        }
+    }
+
+    private fun loadWebsite() {
+        swipeRefresh.isRefreshing = false
+        if (isNetworkAvailable()) {
+            noInternetLayout.visibility = View.GONE
+            webView.visibility = View.VISIBLE
+            if (webView.url == null) webView.loadUrl("https://hisaabtool.blogspot.com/")
+            else webView.reload()
+        } else {
+            webView.visibility = View.GONE
+            noInternetLayout.visibility = View.VISIBLE
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return activeNetwork.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 }
+
+
