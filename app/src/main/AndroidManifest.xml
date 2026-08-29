@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- इंटरनेट इस्तेमाल करने की परमिशन -->
     <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- नेटवर्क/इंटरनेट चेक करने की परमिशन (यही मिसिंग था जिसकी वजह से क्रैश हो रहा था) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/logo"
