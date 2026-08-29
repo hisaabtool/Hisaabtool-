@@ -32,7 +32,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -42,7 +41,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var noInternetLayout: LinearLayout
     private lateinit var btnRetry: Button
     private lateinit var btnShare: ImageButton
-    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var btnHome: Button
+    private lateinit var btnGyaan: Button
+    private lateinit var btnRate: Button
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -66,7 +67,9 @@ class MainActivity : AppCompatActivity() {
         noInternetLayout = findViewById(R.id.noInternetLayout)
         btnRetry = findViewById(R.id.btnRetry)
         btnShare = findViewById(R.id.btnShare)
-        bottomNavigation = findViewById(R.id.bottomNavigation)
+        btnHome = findViewById(R.id.btnHome)
+        btnGyaan = findViewById(R.id.btnGyaan)
+        btnRate = findViewById(R.id.btnRate)
 
         Handler(Looper.getMainLooper()).postDelayed({
             splashScreen.visibility = View.GONE
@@ -85,23 +88,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(shareIntent, "Share via"))
         }
 
-        bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    webView.loadUrl("https://hisaabtool.blogspot.com/")
-                    true
-                }
-                R.id.nav_gyaanshots -> {
-                    webView.loadUrl("https://m.youtube.com/results?search_query=GyaanShots")
-                    true
-                }
-                R.id.nav_rate -> {
-                    showRatingDialog()
-                    false 
-                }
-                else -> false
-            }
-        }
+        btnHome.setOnClickListener { webView.loadUrl("https://hisaabtool.blogspot.com/") }
+        btnGyaan.setOnClickListener { webView.loadUrl("https://m.youtube.com/results?search_query=GyaanShots") }
+        btnRate.setOnClickListener { showRatingDialog() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
