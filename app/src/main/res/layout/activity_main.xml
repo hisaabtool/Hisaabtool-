@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
-    <!-- मुख्य वेबसाइट -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
@@ -15,7 +15,6 @@
             android:layout_height="match_parent" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- लोडिंग प्रोग्रेस बार -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -24,7 +23,6 @@
         android:layout_alignParentTop="true"
         android:visibility="gone" />
 
-    <!-- शेयर बटन -->
     <ImageButton
         android:id="@+id/btnShare"
         android:layout_width="56dp"
@@ -36,7 +34,6 @@
         android:src="@android:drawable/ic_menu_share"
         android:elevation="5dp" />
 
-    <!-- No Internet पेज -->
     <LinearLayout
         android:id="@+id/noInternetLayout"
         android:layout_width="match_parent"
@@ -44,7 +41,8 @@
         android:orientation="vertical"
         android:gravity="center"
         android:background="#FFFFFF"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:layout_above="@+id/bottomBar">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,7 +58,6 @@
             android:text="RETRY" />
     </LinearLayout>
 
-    <!-- सरल और 100% क्रैश-फ्री बॉटम बार -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
@@ -69,39 +66,35 @@
         android:orientation="horizontal"
         android:background="#1A202C"
         android:weightSum="3">
-
         <Button
             android:id="@+id/btnHome"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
+            android:background="#1A202C"
             android:text="🏠 Home"
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
-
         <Button
             android:id="@+id/btnGyaan"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
+            android:background="#1A202C"
             android:text="▶ GyaanShots"
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
-
         <Button
             android:id="@+id/btnRate"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
+            android:background="#1A202C"
             android:text="⭐ Rate Us"
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- Splash Screen -->
     <LinearLayout
         android:id="@+id/splashScreen"
         android:layout_width="match_parent"
