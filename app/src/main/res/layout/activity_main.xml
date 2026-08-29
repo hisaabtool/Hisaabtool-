@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF">
@@ -8,7 +9,7 @@
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottomBar">
+        android:layout_above="@+id/adView">
         <WebView
             android:id="@+id/webView"
             android:layout_width="match_parent"
@@ -27,7 +28,7 @@
         android:id="@+id/btnShare"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:layout_above="@+id/bottomBar"
+        android:layout_above="@+id/adView"
         android:layout_alignParentEnd="true"
         android:layout_margin="20dp"
         android:background="#1A202C"
@@ -42,7 +43,7 @@
         android:gravity="center"
         android:background="#FFFFFF"
         android:visibility="gone"
-        android:layout_above="@+id/bottomBar">
+        android:layout_above="@+id/adView">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,6 +58,16 @@
             android:layout_marginTop="16dp"
             android:text="RETRY" />
     </LinearLayout>
+
+    <!-- AdMob बैनर ऐड -->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/bottomBar"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
 
     <LinearLayout
         android:id="@+id/bottomBar"
